@@ -1,0 +1,49 @@
+# Local project and learning rules
+/PROJECT_RULES.md
+/LEARNING_RULES.md
+/private/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets*.json
+
+# Dependencies
+node_modules/
+
+# Generated frontend output and test coverage
+dist/
+build/
+coverage/
+
+# Logs and temporary files
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+*.swp
+
+# Local data, imports, exports and database backups
+local-data/
+imports/
+exports/
+*.dump
+*.backup
+
+# Supabase local state
+supabase/.branches/
+supabase/.temp/
+
+# Editor and IDE settings
+.vscode/
+.idea/
+*.code-workspace
+
+# Operating system metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
