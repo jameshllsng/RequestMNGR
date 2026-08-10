@@ -2,6 +2,7 @@
 /PROJECT_RULES.md
 /LEARNING_RULES.md
 /private/
+.gitignore
 
 # Environment variables and secrets
 .env
