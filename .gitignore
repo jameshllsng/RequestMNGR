@@ -1,8 +1,8 @@
 # Local project and learning rules
 /PROJECT_RULES.md
 /LEARNING_RULES.md
+/.codex/
 /private/
-.gitignore
 
 # Environment variables and secrets
 .env
@@ -14,6 +14,13 @@ secrets*.json
 
 # Dependencies
 node_modules/
+
+# Java and Maven generated files
+target/
+.mvn/wrapper/maven-wrapper.jar
+
+# Local modernization tool state
+/.github/modernize/
 
 # Generated frontend output and test coverage
 dist/
@@ -43,6 +50,16 @@ supabase/.temp/
 .vscode/
 .idea/
 *.code-workspace
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+*.iws
+*.iml
+*.ipr
 
 # Operating system metadata
 .DS_Store
