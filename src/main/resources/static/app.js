@@ -9,10 +9,17 @@ const itemForms = document.querySelector("#item-forms");
 const itemFormTemplate = document.querySelector("#item-form-template");
 const formMessage = document.querySelector("#form-message");
 const operationFeedback = document.querySelector("#operation-feedback");
+const confirmationDialog = document.querySelector("#confirmation-dialog");
+const confirmationTitle = document.querySelector("#confirmation-title");
+const confirmationMessage = document.querySelector("#confirmation-message");
+const confirmationAction = document.querySelector("#confirmation-action");
+const themeToggle = document.querySelector("#theme-toggle");
 let csrfToken;
 let editingRequestId = null;
 let currentUserRole;
 let feedbackTimeout;
+let feedbackAnimation;
+let confirmationResolver;
 
 document.querySelector("#open-create-form").addEventListener("click", openCreateDialog);
 document.querySelector("#close-create-form").addEventListener("click", closeCreateDialog);
@@ -20,6 +27,10 @@ document.querySelector("#cancel-create").addEventListener("click", closeCreateDi
 document.querySelector("#add-item").addEventListener("click", () => addItemForm(true));
 document.querySelector("#refresh-list").addEventListener("click", loadPurchaseRequests);
 document.querySelector("#logout").addEventListener("click", logout);
+themeToggle.addEventListener("click", toggleTheme);
+document.querySelector("#confirmation-cancel").addEventListener("click", () => resolveConfirmation(false));
+confirmationAction.addEventListener("click", () => resolveConfirmation(true));
+confirmationDialog.addEventListener("cancel", event => { event.preventDefault(); resolveConfirmation(false); });
 createForm.addEventListener("submit", createPurchaseRequest);
 
 function openCreateDialog() { editingRequestId = null; formMessage.hidden = true; dialog.showModal(); }
@@ -44,14 +55,17 @@ async function createPurchaseRequest(event) {
     const items = [...itemForms.querySelectorAll(".item-form")].map(itemForm => ({ description: itemForm.querySelector(".item-description").value, brandModel: blankToNull(itemForm.querySelector(".item-brand-model").value), quantity: Number(itemForm.querySelector(".item-quantity").value), supplierName: blankToNull(itemForm.querySelector(".item-supplier-name").value), totalValue: Number(itemForm.querySelector(".item-total-value").value), notes: blankToNull(itemForm.querySelector(".item-notes").value) }));
     const request = { requestNumber: formData.get("requestNumber"), department: formData.get("department"), requesterName: formData.get("requesterName"), requestedOn: formData.get("requestedOn"), purchaseReason: formData.get("purchaseReason"), priority: formData.get("priority"), buyerName: blankToNull(formData.get("buyerName")), managerName: blankToNull(formData.get("managerName")), costCenter: blankToNull(formData.get("costCenter")), notes: blankToNull(formData.get("notes")), items };
     const message = editingRequestId ? "Requisição atualizada." : "Requisição cadastrada.";
-    try { const response = await fetch(editingRequestId ? `${apiUrl}/${editingRequestId}` : apiUrl, { method: editingRequestId ? "PUT" : "POST", headers: { "Content-Type": "application/json", [csrfToken.headerName]: csrfToken.token }, body: JSON.stringify(request) }); if (!response.ok) throw new Error(await readErrorMessage(response)); closeCreateDialog(); await loadPurchaseRequests(); showOperationFeedback(message, "success"); } catch (error) { formMessage.textContent = error.message; formMessage.hidden = false; }
+    try { const response = await fetch(editingRequestId ? `${apiUrl}/${editingRequestId}` : apiUrl, { method: editingRequestId ? "PUT" : "POST", headers: { "Content-Type": "application/json", [csrfToken.headerName]: csrfToken.token }, body: JSON.stringify(request) }); if (!response.ok) throw new Error(await readErrorMessage(response)); closeCreateDialog(); await loadPurchaseRequests(); showOperationFeedback(message, "success"); } catch (error) { formMessage.textContent = error.message; formMessage.hidden = false; showOperationFeedback(error.message, "danger"); }
 }
 
 async function editPurchaseRequest(id) { const response = await fetch(`${apiUrl}/${id}`); if (!response.ok) { window.alert(await readErrorMessage(response)); return; } const request = await response.json(); editingRequestId = id; createForm.elements.requestNumber.value = request.requestNumber; createForm.elements.department.value = request.department; createForm.elements.requesterName.value = request.requesterName; createForm.elements.requestedOn.value = request.requestedOn; createForm.elements.purchaseReason.value = request.purchaseReason; createForm.elements.priority.value = request.priority; createForm.elements.costCenter.value = request.costCenter ?? ""; createForm.elements.buyerName.value = request.buyerName ?? ""; createForm.elements.managerName.value = request.managerName ?? ""; createForm.elements.notes.value = request.notes ?? ""; itemForms.replaceChildren(); request.items.forEach(item => { addItemForm(); const form = itemForms.lastElementChild; form.querySelector(".item-description").value = item.description; form.querySelector(".item-brand-model").value = item.brandModel ?? ""; form.querySelector(".item-quantity").value = item.quantity; form.querySelector(".item-supplier-name").value = item.supplierName ?? ""; form.querySelector(".item-total-value").value = item.totalValue; form.querySelector(".item-notes").value = item.notes ?? ""; }); dialog.showModal(); }
-async function cancelPurchaseRequest(id) { if (!window.confirm("Cancelar esta requisição? O histórico será mantido.")) return; await performRequest(`${apiUrl}/${id}/cancel`, "POST", "Requisição cancelada.", "warning"); }
-async function deletePurchaseRequest(id) { if (!window.confirm("Excluir definitivamente esta requisição cancelada? Esta ação não pode ser desfeita.")) return; await performRequest(`${apiUrl}/${id}`, "DELETE", "Requisição excluída definitivamente.", "danger"); }
-async function performRequest(url, method, message, variant) { const response = await fetch(url, { method, headers: { [csrfToken.headerName]: csrfToken.token } }); if (!response.ok) { window.alert(await readErrorMessage(response)); return; } await loadPurchaseRequests(); showOperationFeedback(message, variant); }
-function showOperationFeedback(message, variant) { clearTimeout(feedbackTimeout); operationFeedback.className = `operation-feedback operation-feedback-${variant}`; operationFeedback.textContent = message; operationFeedback.hidden = false; feedbackTimeout = window.setTimeout(() => operationFeedback.hidden = true, 3200); }
+async function cancelPurchaseRequest(id) { if (!(await askConfirmation("Cancelar requisição?", "A requisição deixará de aceitar alterações, mas continuará disponível no histórico.", "Cancelar requisição", "warning"))) return; await performRequest(`${apiUrl}/${id}/cancel`, "POST", "Requisição cancelada.", "warning"); }
+async function deletePurchaseRequest(id) { if (!(await askConfirmation("Excluir definitivamente?", "Esta ação removerá permanentemente a requisição e todos os seus itens. Ela não poderá ser desfeita.", "Excluir definitivamente", "danger"))) return; await performRequest(`${apiUrl}/${id}`, "DELETE", "Requisição excluída definitivamente.", "danger"); }
+async function performRequest(url, method, message, variant) { const response = await fetch(url, { method, headers: { [csrfToken.headerName]: csrfToken.token } }); if (!response.ok) { showOperationFeedback(await readErrorMessage(response), "danger"); return; } await loadPurchaseRequests(); showOperationFeedback(message, variant); }
+function showOperationFeedback(message, variant) { clearTimeout(feedbackTimeout); feedbackAnimation?.cancel(); operationFeedback.className = `operation-feedback operation-feedback-${variant}`; operationFeedback.textContent = message; operationFeedback.hidden = false; feedbackAnimation = operationFeedback.animate([{ opacity: 0, transform: "translate(-50%, -28px)" }, { opacity: 1, transform: "translate(-50%, 0)" }], { duration: 420, easing: "cubic-bezier(0.22, 1, 0.36, 1)", fill: "forwards" }); feedbackTimeout = window.setTimeout(hideOperationFeedback, 3200); }
+function hideOperationFeedback() { feedbackAnimation?.cancel(); feedbackAnimation = operationFeedback.animate([{ opacity: 1, transform: "translate(-50%, 0)" }, { opacity: 0, transform: "translate(-50%, -18px)" }], { duration: 260, easing: "ease-in", fill: "forwards" }); feedbackAnimation.finished.then(() => operationFeedback.hidden = true); }
+function askConfirmation(title, message, actionLabel, variant) { confirmationTitle.textContent = title; confirmationMessage.textContent = message; confirmationAction.textContent = actionLabel; confirmationAction.className = `button button-${variant}`; confirmationDialog.showModal(); return new Promise(resolve => confirmationResolver = resolve); }
+function resolveConfirmation(confirmed) { confirmationDialog.close(); confirmationResolver?.(confirmed); confirmationResolver = null; }
 
 async function logout() { const response = await fetch("/logout", { method: "POST", headers: { [csrfToken.headerName]: csrfToken.token } }); if (response.status === 204) window.location.assign("/login.html"); else window.alert("Não foi possível encerrar a sessão."); }
 async function readErrorMessage(response) { if (response.status === 401) return "Sua sessão expirou. Entre novamente."; if (response.status === 403) return "Você não tem permissão para esta operação."; const error = await response.json().catch(() => null); return error?.errors ? Object.values(error.errors).join(" ") : error?.detail ?? "Não foi possível concluir a operação."; }
@@ -62,4 +76,7 @@ function formatOpenDuration(value) { const requestedOn = new Date(`${value}T00:0
 function setTodayAsRequestedDate() { createForm.elements.requestedOn.value = new Date().toISOString().slice(0, 10); }
 
 async function start() { setTodayAsRequestedDate(); addItemForm(); await loadCsrfToken(); if (await loadAuthenticatedUser()) await loadPurchaseRequests(); }
+function toggleTheme() { applyTheme(document.body.classList.contains("theme-light") ? "dark" : "light"); }
+function applyTheme(theme) { const isLight = theme === "light"; document.body.classList.toggle("theme-light", isLight); themeToggle.textContent = isLight ? "◐" : "☀"; themeToggle.setAttribute("aria-label", isLight ? "Ativar modo escuro" : "Ativar modo claro"); themeToggle.title = themeToggle.getAttribute("aria-label"); localStorage.setItem("requestmngr-theme", theme); }
+applyTheme(localStorage.getItem("requestmngr-theme") ?? "dark");
 start().catch(error => { document.querySelector("#request-count").textContent = error.message; });
