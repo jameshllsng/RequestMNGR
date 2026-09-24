@@ -8,15 +8,102 @@
 </head>
 <body>
 <main class="page-shell">
-    <header class="topbar">
-        <div><p class="eyebrow">GESTÃO INTERNA</p><h1>RequestMNGR</h1><p class="subtitle">Requisições de compra</p></div>
-        <div class="account-actions"><span id="current-user" aria-live="polite"></span><button class="button button-secondary" id="logout" type="button">Sair</button><button class="button button-primary" id="open-create-form" type="button">Nova requisição</button></div>
+    <header class="application-header">
+        <div class="application-identity">
+            <h1>RequestMNGR</h1>
+            <p>Controle de requisições de compra</p>
+        </div>
+        <div class="account-actions">
+            <span id="current-user" aria-live="polite"></span>
+            <button class="button button-quiet" id="logout" type="button">Sair</button>
+            <button class="button button-primary" id="open-create-form" type="button">Nova requisição</button>
+        </div>
     </header>
-    <section aria-label="Resumo das requisições"><div class="section-heading"><div><h2>Visão geral</h2><p>Acompanhe as requisições registradas no sistema.</p></div><button class="button button-secondary" id="refresh-list" type="button">Atualizar</button></div><div class="summary-grid" id="summary-cards"></div></section>
-    <section class="content-card" aria-labelledby="requests-title"><div class="section-heading"><div><h2 id="requests-title">Requisições</h2><p id="request-count">Carregando dados...</p></div></div><div class="table-wrapper"><table><thead><tr><th>Número</th><th>Setor</th><th>Solicitante</th><th>Motivo</th><th>Prioridade</th><th>Status</th><th>Data</th><th>Itens</th><th>Valor total</th></tr></thead><tbody id="request-table-body"></tbody></table></div><p class="empty-state" id="empty-state" hidden>Nenhuma requisição cadastrada.</p></section>
+
+    <section class="indicator-strip" aria-label="Resumo das requisições">
+        <div class="summary-grid" id="summary-cards"></div>
+    </section>
+
+    <section class="requests-section" aria-labelledby="requests-title">
+        <div class="section-heading">
+            <div>
+                <h2 id="requests-title">Requisições</h2>
+                <p id="request-count">Carregando dados...</p>
+            </div>
+            <button class="button button-quiet" id="refresh-list" type="button">Atualizar</button>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th>Número</th>
+                    <th>Setor</th>
+                    <th>Solicitante</th>
+                    <th>Motivo</th>
+                    <th>Prioridade</th>
+                    <th>Status</th>
+                    <th>Solicitada em</th>
+                    <th>Em aberto</th>
+                    <th>Itens</th>
+                    <th>Valor total</th>
+                </tr>
+                </thead>
+                <tbody id="request-table-body"></tbody>
+            </table>
+        </div>
+        <p class="empty-state" id="empty-state" hidden>Nenhuma requisição cadastrada.</p>
+    </section>
 </main>
-<dialog id="create-request-dialog"><form id="create-request-form"><div class="dialog-header"><div><p class="eyebrow">NOVA REQUISIÇÃO</p><h2>Registrar compra</h2></div><button class="icon-button" id="close-create-form" type="button" aria-label="Fechar">×</button></div><div class="form-grid"><label>Número da requisição<input name="requestNumber" maxlength="50" required></label><label>Setor<input name="department" maxlength="120" required></label><label>Solicitante<input name="requesterName" maxlength="150" required></label><label>Data da solicitação<input name="requestedOn" type="date" required></label><label>Prioridade<select name="priority" required><option value="LOW">Baixa</option><option value="MEDIUM" selected>Média</option><option value="HIGH">Alta</option></select></label><label>Centro de custo<input name="costCenter" maxlength="80"></label><label>Comprador<input name="buyerName" maxlength="150"></label><label>Gestor<input name="managerName" maxlength="150"></label><label class="full-width">Motivo da compra<textarea name="purchaseReason" rows="3" required></textarea></label><label class="full-width">Observações<textarea name="notes" rows="2"></textarea></label></div><div class="items-header"><div><h3>Itens da requisição</h3><p>Informe pelo menos um item.</p></div><button class="button button-secondary" id="add-item" type="button">Adicionar item</button></div><div id="item-forms"></div><p class="form-message" id="form-message" role="alert" hidden></p><div class="form-actions"><button class="button button-secondary" id="cancel-create" type="button">Cancelar</button><button class="button button-primary" type="submit">Salvar requisição</button></div></form></dialog>
-<template id="item-form-template"><fieldset class="item-form"><legend>Item</legend><button class="remove-item" type="button">Remover</button><div class="form-grid"><label class="full-width">Descrição<input class="item-description" maxlength="500" required></label><label>Marca ou modelo<input class="item-brand-model" maxlength="250"></label><label>Quantidade<input class="item-quantity" type="number" min="1" step="1" value="1" required></label><label>Fornecedor<input class="item-supplier-name" maxlength="200"></label><label>Valor total<input class="item-total-value" type="number" min="0" step="0.01" value="0.00" required></label><label class="full-width">Observações<input class="item-notes" maxlength="2000"></label></div></fieldset></template>
+
+<dialog id="create-request-dialog">
+    <form id="create-request-form">
+        <div class="dialog-header">
+            <div>
+                <h2>Nova requisição</h2>
+                <p>Registre os itens solicitados para acompanhamento.</p>
+            </div>
+            <button class="icon-button" id="close-create-form" type="button" aria-label="Fechar">×</button>
+        </div>
+        <div class="form-grid">
+            <label>Número da requisição<input name="requestNumber" maxlength="50" required></label>
+            <label>Setor<input name="department" maxlength="120" required></label>
+            <label>Solicitante<input name="requesterName" maxlength="150" required></label>
+            <label>Data da solicitação<input name="requestedOn" type="date" required></label>
+            <label>Prioridade<select name="priority" required><option value="LOW">Baixa</option><option value="MEDIUM" selected>Média</option><option value="HIGH">Alta</option></select></label>
+            <label>Centro de custo<input name="costCenter" maxlength="80"></label>
+            <label>Comprador<input name="buyerName" maxlength="150"></label>
+            <label>Gestor<input name="managerName" maxlength="150"></label>
+            <label class="full-width">Motivo da compra<textarea name="purchaseReason" rows="3" required></textarea></label>
+            <label class="full-width">Observações<textarea name="notes" rows="2"></textarea></label>
+        </div>
+        <div class="items-header">
+            <div><h3>Itens</h3><p>Informe pelo menos um item.</p></div>
+            <button class="button button-quiet" id="add-item" type="button">Adicionar item</button>
+        </div>
+        <div id="item-forms"></div>
+        <p class="form-message" id="form-message" role="alert" hidden></p>
+        <div class="form-actions">
+            <button class="button button-quiet" id="cancel-create" type="button">Cancelar</button>
+            <button class="button button-primary" type="submit">Salvar requisição</button>
+        </div>
+    </form>
+</dialog>
+
+<template id="item-form-template">
+    <fieldset class="item-form">
+        <legend>Item</legend>
+        <button class="remove-item" type="button">Remover</button>
+        <div class="form-grid">
+            <label class="full-width">Descrição<input class="item-description" maxlength="500" required></label>
+            <label>Marca ou modelo<input class="item-brand-model" maxlength="250"></label>
+            <label>Quantidade<input class="item-quantity" type="number" min="1" step="1" value="1" required></label>
+            <label>Fornecedor<input class="item-supplier-name" maxlength="200"></label>
+            <label>Valor total<input class="item-total-value" type="number" min="0" step="0.01" value="0.00" required></label>
+            <label class="full-width">Observações<input class="item-notes" maxlength="2000"></label>
+        </div>
+    </fieldset>
+</template>
+
 <script src="/app.js" defer></script>
 </body>
 </html>
