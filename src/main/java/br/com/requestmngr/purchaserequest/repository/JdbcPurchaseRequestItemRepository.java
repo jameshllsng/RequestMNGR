@@ -77,4 +77,9 @@ public class JdbcPurchaseRequestItemRepository implements PurchaseRequestItemRep
                 resultSet.getTimestamp("created_at").toInstant(),
                 resultSet.getTimestamp("updated_at").toInstant()), purchaseRequestId);
     }
+
+    @Override
+    public void deleteByPurchaseRequestId(long purchaseRequestId) {
+        jdbcTemplate.update("DELETE FROM purchase_request_items WHERE purchase_request_id = ?", purchaseRequestId);
+    }
 }

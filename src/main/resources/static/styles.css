@@ -97,6 +97,8 @@ tbody tr:hover { background: #f8fbff; }
 .empty-state { border: 1px solid #d8dde5; border-top: 0; color: #69727f; margin: 0; padding: 24px 12px; text-align: center; }
 
 .badge { border-radius: 4px; display: inline-flex; font-size: 0.72rem; font-weight: 700; padding: 3px 6px; white-space: nowrap; }
+.table-action { background: transparent; border: 0; color: #1f5fae; font-size: 0.8rem; padding: 2px 5px; text-decoration: underline; }
+.table-action + .table-action { margin-left: 4px; }
 .priority-high { background: #fbe8e7; color: #9b3029; }
 .priority-medium { background: #fff4d7; color: #805b17; }
 .priority-low { background: #e3f2e9; color: #21663b; }

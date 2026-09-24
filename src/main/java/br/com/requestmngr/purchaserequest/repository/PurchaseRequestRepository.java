@@ -1,6 +1,7 @@
 package br.com.requestmngr.purchaserequest.repository;
 
 import br.com.requestmngr.purchaserequest.domain.PurchaseRequest;
+import br.com.requestmngr.purchaserequest.domain.PurchaseRequestStatus;
 import br.com.requestmngr.purchaserequest.domain.PurchaseRequestSummary;
 
 import java.util.List;
@@ -15,4 +16,8 @@ public interface PurchaseRequestRepository {
     List<PurchaseRequestSummary> findAll();
 
     Optional<PurchaseRequest> update(PurchaseRequest purchaseRequest);
+
+    Optional<PurchaseRequest> updateStatus(long id, PurchaseRequestStatus status);
+
+    void deleteById(long id);
 }

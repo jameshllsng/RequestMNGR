@@ -2,6 +2,7 @@ package br.com.requestmngr.shared.api;
 
 import br.com.requestmngr.purchaserequest.service.DuplicatePurchaseRequestNumberException;
 import br.com.requestmngr.purchaserequest.service.PurchaseRequestNotFoundException;
+import br.com.requestmngr.purchaserequest.service.PurchaseRequestNotOpenException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,11 @@ public class ApiExceptionHandler {
     @ExceptionHandler(DuplicatePurchaseRequestNumberException.class)
     public ResponseEntity<ProblemDetail> handleDuplicateRequestNumber(DuplicatePurchaseRequestNumberException exception) {
         return problem(HttpStatus.CONFLICT, "Já existe uma requisição com este número.");
+    }
+
+    @ExceptionHandler(PurchaseRequestNotOpenException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidStatus(PurchaseRequestNotOpenException exception) {
+        return problem(HttpStatus.CONFLICT, "A requisição não está disponível para esta operação.");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

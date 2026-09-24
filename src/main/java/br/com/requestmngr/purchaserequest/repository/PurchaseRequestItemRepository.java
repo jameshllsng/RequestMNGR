@@ -9,4 +9,6 @@ public interface PurchaseRequestItemRepository {
     PurchaseRequestItem insert(PurchaseRequestItem purchaseRequestItem);
 
     List<PurchaseRequestItem> findByPurchaseRequestId(long purchaseRequestId);
+
+    void deleteByPurchaseRequestId(long purchaseRequestId);
 }

@@ -4,6 +4,7 @@ import br.com.requestmngr.purchaserequest.service.PurchaseRequestService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -46,4 +47,12 @@ public class PurchaseRequestController {
             @Valid @RequestBody UpdatePurchaseRequestRequest request) {
         return purchaseRequestService.update(id, request);
     }
+
+    @PostMapping("/{id}/cancel")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void cancel(@PathVariable long id) { purchaseRequestService.cancel(id); }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletePermanently(@PathVariable long id) { purchaseRequestService.deletePermanently(id); }
 }

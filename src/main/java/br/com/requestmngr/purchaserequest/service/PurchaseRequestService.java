@@ -79,6 +79,7 @@ public class PurchaseRequestService {
     public PurchaseRequestResponse update(long id, UpdatePurchaseRequestRequest request) {
         PurchaseRequest currentRequest = purchaseRequestRepository.findById(id)
                 .orElseThrow(() -> new PurchaseRequestNotFoundException(id));
+        requireOpen(currentRequest);
 
         try {
             PurchaseRequest updatedRequest = purchaseRequestRepository.update(new PurchaseRequest(
@@ -98,10 +99,31 @@ public class PurchaseRequestService {
                             currentRequest.updatedAt()))
                     .orElseThrow(() -> new PurchaseRequestNotFoundException(id));
 
-            return toResponse(updatedRequest, purchaseRequestItemRepository.findByPurchaseRequestId(id));
+            purchaseRequestItemRepository.deleteByPurchaseRequestId(id);
+            request.items().forEach(item -> purchaseRequestItemRepository.insert(toPurchaseRequestItem(id, item)));
+            return getById(updatedRequest.id());
         } catch (DuplicateKeyException exception) {
             throw new DuplicatePurchaseRequestNumberException();
         }
+    }
+
+    @Transactional
+    public void cancel(long id) {
+        PurchaseRequest currentRequest = purchaseRequestRepository.findById(id).orElseThrow(() -> new PurchaseRequestNotFoundException(id));
+        requireOpen(currentRequest);
+        purchaseRequestRepository.updateStatus(id, PurchaseRequestStatus.CANCELLED);
+    }
+
+    @Transactional
+    public void deletePermanently(long id) {
+        PurchaseRequest currentRequest = purchaseRequestRepository.findById(id).orElseThrow(() -> new PurchaseRequestNotFoundException(id));
+        if (currentRequest.status() != PurchaseRequestStatus.CANCELLED) throw new PurchaseRequestNotOpenException();
+        purchaseRequestItemRepository.deleteByPurchaseRequestId(id);
+        purchaseRequestRepository.deleteById(id);
+    }
+
+    private void requireOpen(PurchaseRequest purchaseRequest) {
+        if (purchaseRequest.status() != PurchaseRequestStatus.OPEN) throw new PurchaseRequestNotOpenException();
     }
 
     private PurchaseRequestItem toPurchaseRequestItem(long purchaseRequestId, CreatePurchaseRequestItemRequest item) {

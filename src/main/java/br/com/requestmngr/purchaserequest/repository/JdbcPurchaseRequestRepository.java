@@ -118,6 +118,17 @@ public class JdbcPurchaseRequestRepository implements PurchaseRequestRepository 
         return updatedRows == 0 ? Optional.empty() : findById(purchaseRequest.id());
     }
 
+    @Override
+    public Optional<PurchaseRequest> updateStatus(long id, PurchaseRequestStatus status) {
+        int updatedRows = jdbcTemplate.update("UPDATE purchase_requests SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?", status.name(), id);
+        return updatedRows == 0 ? Optional.empty() : findById(id);
+    }
+
+    @Override
+    public void deleteById(long id) {
+        jdbcTemplate.update("DELETE FROM purchase_requests WHERE id = ?", id);
+    }
+
     private static class PurchaseRequestRowMapper implements RowMapper<PurchaseRequest> {
 
         @Override
