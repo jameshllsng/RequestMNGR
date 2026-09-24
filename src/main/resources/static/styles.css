@@ -97,8 +97,11 @@ tbody tr:hover { background: #f8fbff; }
 .empty-state { border: 1px solid #d8dde5; border-top: 0; color: #69727f; margin: 0; padding: 24px 12px; text-align: center; }
 
 .badge { border-radius: 4px; display: inline-flex; font-size: 0.72rem; font-weight: 700; padding: 3px 6px; white-space: nowrap; }
-.table-action { background: transparent; border: 0; color: #1f5fae; font-size: 0.8rem; padding: 2px 5px; text-decoration: underline; }
-.table-action + .table-action { margin-left: 4px; }
+.table-actions { white-space: nowrap; }
+.table-action { border: 1px solid; border-radius: 4px; font-size: 0.76rem; font-weight: 600; margin-right: 4px; padding: 4px 7px; }
+.table-action-edit { background: #eef5fd; border-color: #a9c8ea; color: #1f5fae; }
+.table-action-cancel { background: #fff6df; border-color: #e5ca87; color: #805b17; }
+.table-action-delete { background: #fff0ef; border-color: #e8b8b4; color: #9b3029; }
 .priority-high { background: #fbe8e7; color: #9b3029; }
 .priority-medium { background: #fff4d7; color: #805b17; }
 .priority-low { background: #e3f2e9; color: #21663b; }
@@ -130,6 +133,10 @@ textarea { resize: vertical; }
 .item-form legend { color: #586372; font-size: 0.8rem; font-weight: 700; padding: 0 5px; }
 .form-actions { border-top: 1px solid #d8dde5; justify-content: flex-end; margin-top: 22px; padding-top: 18px; }
 .form-message { background: #fff0ef; border: 1px solid #ebbbb7; border-radius: 4px; color: #9b3029; margin: 16px 0 0; padding: 10px; }
+.operation-feedback { bottom: 20px; box-shadow: 0 8px 20px rgba(22, 31, 43, 0.18); color: #fff; font-size: 0.86rem; left: 50%; padding: 10px 14px; position: fixed; transform: translateX(-50%); z-index: 10; }
+.operation-feedback-success { background: #21663b; }
+.operation-feedback-warning { background: #805b17; }
+.operation-feedback-danger { background: #9b3029; }
 
 .login-page { align-items: center; display: flex; justify-content: center; min-height: 100vh; padding: 28px; }
 .login-shell { border-top: 3px solid #1f5fae; max-width: 360px; padding-top: 14px; width: 100%; }
